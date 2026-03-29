@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PersonEstimation",
+  "type": "object",
+  "properties": {
+    "gender": {
+      "type": "string",
+      "enum": ["female", "male", "unknown"],
+      "description": "Apparent gender based on visual characteristics."
+    },
+    "age_estimate": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 120,
+      "description": "Estimated age of the person in years."
+    },
+    "ancestry_cluster": {
+      "type": "string",
+      "enum": [
+        "West Eurasian",
+        "East Asian",
+        "South Asian",
+        "Sub-Saharan African",
+        "Native American",
+        "Oceanian",
+        "Unknown"
+      ],
+      "description": "Estimated continental ancestry cluster based on visual features."
+    },
+    "eye_color": {
+      "type": "string",
+      "enum": [
+        "brown",
+        "hazel",
+        "blue",
+        "green",
+        "amber",
+        "gray"
+      ],
+      "description": "Eye color of the person."
+    }
+  },
+  "required": ["gender", "age_estimate", "ancestry_cluster", "eye_color"]
+}
