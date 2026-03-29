@@ -4,6 +4,16 @@ This repository contains a small exploratory study on bias in AI image generatio
 
 This is not a formal benchmark or a publication-ready dataset. It is a personal research project intended to make patterns visible quickly.
 
+## Repository layout
+
+This project is intentionally split across two remotes:
+
+- Code and lightweight metadata live on GitHub: `https://github.com/ODanione/ai-bias`
+- The AI-generated image corpus lives on Hugging Face: `https://huggingface.co/datasets/ODanione/ai-bias-images`
+
+The GitHub repository is the canonical home for scripts, prompts, schema drafts, and small derived artifacts such as `statistics.json`.
+The Hugging Face dataset is the canonical home for the large AI-generated image folders.
+
 ## What is in the repo
 
 The repository mixes image collections, labeling helpers, and lightweight analysis tooling.
@@ -18,6 +28,30 @@ The repository mixes image collections, labeling helpers, and lightweight analys
 - `statistics_generate.py`: collects those `.txt` files into `statistics.json`.
 - `statistics_show.py`: starts a local Flask app for interactively exploring the aggregated labels.
 - `rasterize.py`: creates a contact-sheet style composite image from a directory of images.
+
+## Storage policy
+
+The project contains three different classes of assets:
+
+- Code and small metadata files: kept in GitHub
+- AI-generated image corpora that the project controls: published on Hugging Face
+- Third-party or local-only material: kept out of public dataset hosting
+
+Current policy:
+
+- Public on Hugging Face:
+  - `FLUX/`
+  - `FLUX2/`
+  - `NanoBanana/`
+  - `Sora/`
+- Not published as part of the public dataset:
+  - `AdobeStock/`
+  - `GoogleSearch/`
+  - `Papers/`
+  - `_Obsolete/`
+  - local secrets and local virtual environments
+
+This split exists because the public dataset is limited to AI-generated images that are under project control, while third-party and reference material remain local-only.
 
 ## Corpus shape
 
@@ -42,8 +76,6 @@ Most folders are organized as `SOURCE/CATEGORY/...`, where category names includ
 - `Prisoner`
 - `Social Worker`
 - `Teacher`
-
-There are also a few extra or incomplete branches, such as `Sora/Police Car` and `_Obsolete/`.
 
 For `GoogleSearch` and `AdobeStock`, the intent was not to build a carefully curated benchmark. They were meant as a short sanity check for "bias on the internet in general": for each category, the first 24 images found in Google Image Search or Adobe Stock were saved.
 
@@ -89,6 +121,8 @@ The workflow in this repo appears to be:
 4. Run `statistics_generate.py` to combine those outputs into `statistics.json`.
 5. Explore the results in `statistics_show.py` or build visual sheets with `rasterize.py`.
 
+If you need the full AI-generated corpus and it is not present locally, fetch it from the Hugging Face dataset repo instead of expecting it to exist in GitHub history.
+
 ## Scripts
 
 ### Categorize images
@@ -114,6 +148,7 @@ Notes:
 - It currently processes `.png`, `.jpg`, and `.jpeg` files.
 - `categorizeV1.py` is an older version based on the Assistants API.
 - A local `.env` file is also fine if you load it into the environment and keep it out of Git.
+- The scripts operate on local folders. If the large image directories are missing locally, retrieve them from the Hugging Face dataset first.
 
 ### Build `statistics.json`
 
@@ -162,6 +197,17 @@ This repo is useful for exploratory inspection, but it has important limitations
 - Image counts are not perfectly uniform across all folders.
 
 Because of that, this project is best read as an exploratory artifact: a way to surface patterns, not a definitive measurement of bias.
+
+## Secrets and local setup
+
+- Keep secrets in a local `.env` file or in exported environment variables.
+- Do not commit `.env`, API keys, tokens, or virtual environment contents.
+- The local `.venv/` directory is for local execution only and is intentionally ignored by Git.
+
+Typical local secret keys used in this project:
+
+- `OPENAI_API_KEY`
+- `HF_TOKEN`
 
 ## Possible next steps
 
