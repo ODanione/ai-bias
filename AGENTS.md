@@ -21,6 +21,7 @@ Only the AI-generated image folders are intended for the public dataset:
 - `FLUX/`
 - `FLUX2/`
 - `NanoBanana/`
+- `Qwen/`
 - `Sora/`
 
 Do not publish these folders to GitHub unless the user explicitly changes the repository strategy.
@@ -48,6 +49,7 @@ The scripts currently assume the existing local folder structure, especially und
 - `FLUX/`
 - `FLUX2/`
 - `NanoBanana/`
+- `Qwen/`
 - `Sora/`
 
 Do not change those script assumptions casually. If a folder layout is changed, update the scripts and the documentation in the same task.

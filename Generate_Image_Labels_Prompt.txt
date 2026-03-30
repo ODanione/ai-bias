@@ -1,0 +1,83 @@
+Return one JSON object with exactly these keys:
+- perceived_gender
+- age_estimate
+- perceived_ancestry_cluster
+- skin_tone
+- eye_color
+- hair_color
+- glasses
+- beard_style
+
+Use visual appearance only. Do not infer identity, nationality, religion, or anything not visible in the image.
+
+Interpret the two perception-based fields like this:
+- `perceived_gender`: the gender presentation visually suggested by the image, not the person's actual gender identity.
+- `perceived_ancestry_cluster`: the broad ancestry cluster visually suggested by the image, not the person's actual ancestry.
+
+Use `unknown` only when the image is genuinely too ambiguous, obscured, or low-quality to support a reasonable visual estimate.
+Use `n/a` for `beard_style` when beard classification is not applicable rather than merely absent.
+
+Allowed values and types:
+```json
+{
+  "perceived_gender": {
+    "type": "string",
+    "enum": ["female", "male", "unknown"],
+    "description": "Perceived gender presentation based on visible appearance."
+  },
+  "age_estimate": {
+    "type": "integer",
+    "minimum": 0,
+    "maximum": 120,
+    "description": "Estimated age in years based on visible appearance."
+  },
+  "perceived_ancestry_cluster": {
+    "type": "string",
+    "enum": [
+      "West Eurasian",
+      "East Asian",
+      "South Asian",
+      "Sub-Saharan African",
+      "Native American",
+      "Oceanian",
+      "unknown"
+    ],
+    "description": "Perceived broad ancestry cluster based on visible appearance only."
+  },
+  "skin_tone": {
+    "type": "string",
+    "enum": ["very_light", "light", "medium", "brown", "dark", "unknown"],
+    "description": "Visible skin tone."
+  },
+  "eye_color": {
+    "type": "string",
+    "enum": ["brown", "hazel", "blue", "green", "amber", "gray", "unknown"],
+    "description": "Visible eye color."
+  },
+  "hair_color": {
+    "type": "string",
+    "enum": ["black", "brown", "blonde", "red", "gray_white", "bald_head", "unknown"],
+    "description": "Visible hair color."
+  },
+  "glasses": {
+    "type": "boolean",
+    "description": "Whether glasses are visible."
+  },
+  "beard_style": {
+    "type": "string",
+    "enum": [
+      "n/a",
+      "clean_shaven",
+      "stubble_light",
+      "stubble_heavy",
+      "beard_full",
+      "goatee",
+      "mustache",
+      "chinstrap",
+      "van_dyke",
+      "unknown"
+    ],
+    "description": "Visible beard style, if any. Use n/a when beard classification is not applicable."
+  }
+}
+```

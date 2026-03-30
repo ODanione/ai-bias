@@ -1,6 +1,6 @@
 # AI Image Bias Mini-Study
 
-This repository contains a small exploratory study on bias in AI image generation. The basic idea is simple: compare how different image sources represent the same role or person label, then inspect recurring patterns in gender, perceived ancestry, skin tone, age, and other visible traits.
+This repository contains a small exploratory study on bias in AI image generation. The basic idea is simple: compare how different image sources represent the same role or person label, then inspect recurring patterns in perceived gender, perceived ancestry, skin tone, age, and other visible traits.
 
 This is not a formal benchmark or a publication-ready dataset. It is a personal research project intended to make patterns visible quickly.
 
@@ -19,13 +19,13 @@ The Hugging Face dataset is the canonical home for the large AI-generated image 
 The repository mixes image collections, labeling helpers, and lightweight analysis tooling.
 
 - `AdobeStock/`, `GoogleSearch/`: quick reference samples used as a rough check of what bias looks like in internet-visible imagery, based on the first 24 images found per category.
-- `FLUX/`, `FLUX2/`, `Sora/`, `NanoBanana/`: AI-generated image sets grouped by prompt target such as `CEO`, `Cashier`, `Doctor`, `Teacher`, or `Person`.
+- `FLUX/`, `FLUX2/`, `Sora/`, `NanoBanana/`, `Qwen/`: AI-generated image sets grouped by prompt target such as `CEO`, `Cashier`, `Doctor`, `Teacher`, or `Person`.
 - `Papers/`: background reading related to the topic.
 - `statistics.json`: the currently aggregated structured labels used by the explorer UI.
 - `charactgeristics.json`: a JSON schema draft for the person-attribute labels.
-- `Categorize_Prompt.txt`: the prompt used to ask a vision model to extract structured attributes from images.
-- `categorize.py`: generates one JSON-like `.txt` label file per image using the OpenAI API.
-- `statistics_generate.py`: collects those `.txt` files into `statistics.json`.
+- `Generate_Image_Labels_Prompt.txt`: the prompt used to ask a vision model to extract structured attributes from images.
+- `generate_image_labels.py`: generates one `.json` label file per image using the OpenAI API.
+- `statistics_generate.py`: collects those `.json` files into `statistics.json`.
 - `statistics_show.py`: starts a local Flask app for interactively exploring the aggregated labels.
 - `rasterize.py`: creates a contact-sheet style composite image from a directory of images.
 
@@ -43,6 +43,7 @@ Current policy:
   - `FLUX/`
   - `FLUX2/`
   - `NanoBanana/`
+  - `Qwen/`
   - `Sora/`
 - Not published as part of the public dataset:
   - `AdobeStock/`
@@ -55,13 +56,14 @@ This split exists because the public dataset is limited to AI-generated images t
 
 ## Corpus shape
 
-The image corpus currently contains 1,422 image files across the main source folders:
+The image corpus currently contains 1,392 image files across the main source folders:
 
 - `AdobeStock`: 240 images
 - `FLUX`: 250 images
 - `FLUX2`: 320 images
-- `GoogleSearch`: 252 images
-- `NanoBanana`: 132 images
+- `GoogleSearch`: 186 images
+- `NanoBanana`: 72 images
+- `Qwen`: 96 images
 - `Sora`: 228 images
 
 Most folders are organized as `SOURCE/CATEGORY/...`, where category names include:
@@ -79,6 +81,31 @@ Most folders are organized as `SOURCE/CATEGORY/...`, where category names includ
 
 For `GoogleSearch` and `AdobeStock`, the intent was not to build a carefully curated benchmark. They were meant as a short sanity check for "bias on the internet in general": for each category, the first 24 images found in Google Image Search or Adobe Stock were saved.
 
+## Image sources
+
+The image folders mix AI-generated sources and search-based reference sources. The purpose of keeping them separate is to compare how the same role labels are visually represented across generators and across rough internet-facing reference material.
+
+### AI-generated sources
+
+- `FLUX/`: images generated with quantized local runs of Black Forest Labs' `FLUX.1 [dev]` model. Black Forest Labs announced FLUX.1 on August 1, 2024. The broader FLUX.1 line mixes open-weight and closed offerings, but this project's `FLUX/` folder specifically comes from quantized `FLUX.1 [dev]`, the open-weight non-commercial variant.
+- `FLUX2/`: images generated with quantized local runs of Black Forest Labs' `FLUX.2 [dev]` model, i.e. the second-generation FLUX line rather than another FLUX.1 run. Black Forest Labs announced FLUX.2 on November 25, 2025. The broader FLUX.2 line mixes API products and open-weight releases, but this project's `FLUX2/` folder specifically refers to quantized `FLUX.2 [dev]` outputs.
+- `NanoBanana/`: images generated with Google's Gemini 2.5 Flash Image family. Google introduced Gemini 2.5 Flash Image on August 26, 2025 and explicitly described it as "aka nano-banana". This is a closed Google model delivered through the Gemini API, Google AI Studio, and Vertex AI rather than open weights.
+- `Qwen/`: images generated with Qwen-Image from Alibaba's Qwen team. Qwen announced Qwen-Image on August 4, 2025 as a 20B image foundation model and released weights publicly on Hugging Face and ModelScope. In practice this makes `Qwen/` the open-weight image-generator bucket in this repo.
+- `Sora/`: images generated with OpenAI Sora. OpenAI first published Sora research on February 15, 2024 and launched Sora as a product for ChatGPT users on December 9, 2024. Sora is a closed OpenAI model and service rather than an open-weight release.
+
+These folders represent model-controlled outputs rather than third-party reference imagery, which is why they are the folders intended for publication in the Hugging Face dataset repo.
+
+License note for AI-generated folders: project metadata and documentation can be published under `CC-BY 4.0`, but the generated images themselves may also remain subject to the license terms, usage policies, or service terms of their upstream model providers. In other words, the dataset should not imply that `CC-BY 4.0` is the only governing layer for `FLUX/`, `FLUX2/`, `NanoBanana/`, `Qwen/`, or `Sora/`.
+
+### Search-based reference sources
+
+- `GoogleSearch/`: images collected from Google Image Search.
+- `AdobeStock/`: images collected from Adobe Stock search results.
+
+For both search-based sources, the collection rule was intentionally simple: use the search function for each target label and keep the first 24 sensible results. Obviously irrelevant results were skipped, for example comic or cartoon images, non-person results, or images that clearly did not match the intended query.
+
+These folders are rough reference samples only. They are not controlled datasets and are not published as part of the public Hugging Face dataset.
+
 ## Current labeled subset
 
 The current `statistics.json` does not describe the whole corpus. It contains 48 labeled samples only, and all of them come from the `FLUX` directory:
@@ -86,16 +113,16 @@ The current `statistics.json` does not describe the whole corpus. It contains 48
 - 24 `CEO` images
 - 24 `Cashier` images
 
-Those labels were generated from the `.txt` sidecar files in:
+Those labels were generated from the sidecar label files in:
 
 - `FLUX/CEO`
 - `FLUX/Cashier`
 
 The extracted attributes currently include:
 
-- `gender`
+- `perceived_gender`
 - `age_estimate`
-- `ancestry_cluster`
+- `perceived_ancestry_cluster`
 - `skin_tone`
 - `eye_color`
 - `hair_color`
@@ -116,8 +143,8 @@ That is not enough to make a strong statistical claim about all generators in th
 The workflow in this repo appears to be:
 
 1. Collect or generate images for the same prompt category from different sources.
-2. Use `categorize.py` with `Categorize_Prompt.txt` to extract structured person attributes from each image.
-3. Save one `.txt` result next to each image.
+2. Use `generate_image_labels.py` with `Generate_Image_Labels_Prompt.txt` to extract structured person attributes from each image.
+3. Save one `.json` result next to each image.
 4. Run `statistics_generate.py` to combine those outputs into `statistics.json`.
 5. Explore the results in `statistics_show.py` or build visual sheets with `rasterize.py`.
 
@@ -127,7 +154,7 @@ If you need the full AI-generated corpus and it is not present locally, fetch it
 
 ### Categorize images
 
-`categorize.py` sends images to the OpenAI API and writes a `.txt` file next to each image containing the extracted JSON fields.
+`generate_image_labels.py` sends images to the OpenAI API and writes a `.json` file next to each image containing the extracted JSON fields.
 
 Prerequisites:
 
@@ -139,12 +166,12 @@ Run:
 
 ```bash
 export OPENAI_API_KEY="your-api-key-here"
-python categorize.py FLUX/Cashier
+python generate_image_labels.py FLUX/Cashier
 ```
 
 Notes:
 
-- The script reads the prompt from `Categorize_Prompt.txt`.
+- The script reads the prompt from `Generate_Image_Labels_Prompt.txt`.
 - It currently processes `.png`, `.jpg`, and `.jpeg` files.
 - `categorizeV1.py` is an older version based on the Assistants API.
 - A local `.env` file is also fine if you load it into the environment and keep it out of Git.
@@ -152,7 +179,7 @@ Notes:
 
 ### Build `statistics.json`
 
-This script walks one directory level below the given base directory, reads `.txt` files, extracts JSON objects, and appends the folder name as `person_type`.
+This script walks one directory level below the given base directory, reads `.json` files, extracts JSON objects, and appends the folder name as `person_type`.
 
 ```bash
 python statistics_generate.py FLUX
@@ -211,7 +238,7 @@ Typical local secret keys used in this project:
 
 ## Possible next steps
 
-- Generate `.txt` labels for the rest of the corpus.
+- Generate `.json` labels for the rest of the corpus.
 - Build one `statistics.json` per source and compare them side by side.
 - Keep prompt wording constant and document it explicitly for each source.
 - Add simple plots or exported CSV summaries.

@@ -63,7 +63,7 @@ def collect_persons(base_dir: str) -> List[Dict[str, Any]]:
     """
     Walk one level of subdirectories in base_dir.
     Each subdirectory name = person_type.
-    In each, read all .txt files, extract a JSON object per file,
+    In each, read all .json files, extract a JSON object per file,
     and attach 'person_type' to it.
     """
     persons: List[Dict[str, Any]] = []
@@ -79,11 +79,11 @@ def collect_persons(base_dir: str) -> List[Dict[str, Any]]:
         person_type = entry.name
         person_dir = entry.path
 
-        # Find all .txt files in this subdirectory
+        # Find all label files in this subdirectory
         for item in os.scandir(person_dir):
             if not item.is_file():
                 continue
-            if not item.name.lower().endswith(".txt"):
+            if not item.name.lower().endswith((".json", ".txt")):
                 continue
 
             file_path = item.path
@@ -104,7 +104,7 @@ def collect_persons(base_dir: str) -> List[Dict[str, Any]]:
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
-            "Collect person JSON objects from .txt files in one-level "
+            "Collect person JSON objects from .json files in one-level "
             "subdirectories and write them into statistics.json."
         )
     )

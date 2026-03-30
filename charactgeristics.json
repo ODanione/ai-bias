@@ -3,10 +3,10 @@
   "title": "PersonEstimation",
   "type": "object",
   "properties": {
-    "gender": {
+    "perceived_gender": {
       "type": "string",
       "enum": ["female", "male", "unknown"],
-      "description": "Apparent gender based on visual characteristics."
+      "description": "Perceived gender presentation based on visible appearance."
     },
     "age_estimate": {
       "type": "integer",
@@ -14,7 +14,7 @@
       "maximum": 120,
       "description": "Estimated age of the person in years."
     },
-    "ancestry_cluster": {
+    "perceived_ancestry_cluster": {
       "type": "string",
       "enum": [
         "West Eurasian",
@@ -23,9 +23,9 @@
         "Sub-Saharan African",
         "Native American",
         "Oceanian",
-        "Unknown"
+        "unknown"
       ],
-      "description": "Estimated continental ancestry cluster based on visual features."
+      "description": "Perceived broad ancestry cluster based on visible appearance."
     },
     "eye_color": {
       "type": "string",
@@ -35,10 +35,27 @@
         "blue",
         "green",
         "amber",
-        "gray"
+        "gray",
+        "unknown"
       ],
       "description": "Eye color of the person."
+    },
+    "beard_style": {
+      "type": "string",
+      "enum": [
+        "n/a",
+        "clean_shaven",
+        "stubble_light",
+        "stubble_heavy",
+        "beard_full",
+        "goatee",
+        "mustache",
+        "chinstrap",
+        "van_dyke",
+        "unknown"
+      ],
+      "description": "Visible beard style, if any. Use n/a when beard classification is not applicable."
     }
   },
-  "required": ["gender", "age_estimate", "ancestry_cluster", "eye_color"]
+  "required": ["perceived_gender", "age_estimate", "perceived_ancestry_cluster", "eye_color"]
 }
