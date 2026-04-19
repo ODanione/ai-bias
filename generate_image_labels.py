@@ -6,9 +6,13 @@ import mimetypes
 import os
 import re
 import sys
+import random
 from typing import Any, Dict, Optional, List
 
-from openai import AsyncOpenAI
+from dotenv import load_dotenv
+from openai import AsyncOpenAI, RateLimitError
+
+load_dotenv()
 
 
 API_KEY_ENV_VAR = "OPENAI_API_KEY"
@@ -128,6 +132,7 @@ async def generate_caption_for_image(
     model: str = "gpt-4o",
     detail: str = "high",
     stream: bool = True,
+    max_retries: int = 5,
 ) -> Optional[str]:
     """
     Call the OpenAI API with a text prompt + image and return the generated caption.
@@ -167,39 +172,53 @@ async def generate_caption_for_image(
         },
     ]
 
-    # --- Streaming version ---
-    if stream:
-        chunks: List[str] = []
+    for attempt in range(max_retries + 1):
+        try:
+            # --- Streaming version ---
+            if stream:
+                chunks: List[str] = []
 
-        response_stream = await client.chat.completions.create(
-            model=model,
-            messages=messages,
-            response_format={"type": "json_object"},
-            stream=True,
-        )
+                response_stream = await client.chat.completions.create(
+                    model=model,
+                    messages=messages,
+                    response_format={"type": "json_object"},
+                    stream=True,
+                )
 
-        # We assemble the full text; if you want to print token-by-token,
-        # you can also print inside this loop.
-        async for chunk in response_stream:
-            choice = chunk.choices[0]
-            delta = choice.delta
+                # We assemble the full text; if you want to print token-by-token,
+                # you can also print inside this loop.
+                async for chunk in response_stream:
+                    choice = chunk.choices[0]
+                    delta = choice.delta
 
-            # delta.content is typically a string for text tokens
-            if delta and delta.content:
-                chunks.append(delta.content)
+                    # delta.content is typically a string for text tokens
+                    if delta and delta.content:
+                        chunks.append(delta.content)
 
-        full_text = "".join(chunks).strip()
-        return full_text or None
+                full_text = "".join(chunks).strip()
+                return full_text or None
 
-    # --- Non-streaming fallback (unused currently, but handy to keep) ---
-    completion = await client.chat.completions.create(
-        model=model,
-        messages=messages,
-        response_format={"type": "json_object"},
-        stream=False,
-    )
-    content = completion.choices[0].message.content
-    return content.strip() if content else None
+            # --- Non-streaming fallback (unused currently, but handy to keep) ---
+            completion = await client.chat.completions.create(
+                model=model,
+                messages=messages,
+                response_format={"type": "json_object"},
+                stream=False,
+            )
+            content = completion.choices[0].message.content
+            return content.strip() if content else None
+        except RateLimitError as exc:
+            if attempt >= max_retries:
+                raise
+
+            delay_seconds = min(2**attempt, 10) + random.uniform(0, 1)
+            print(
+                f"⚠️  Rate limit for {image_path}. "
+                f"Retrying in {delay_seconds:.1f}s ({attempt + 1}/{max_retries})"
+            )
+            await asyncio.sleep(delay_seconds)
+
+            continue
 
 
 async def process_single_image(
@@ -252,6 +271,7 @@ async def process_directory(
     max_concurrency: int = 5,
     model: str = "gpt-4o",
     detail: str = "high",
+    overwrite: bool = False,
 ) -> None:
     """
     Find all images in the directory and process them concurrently
@@ -271,6 +291,9 @@ async def process_directory(
 
         ext = os.path.splitext(name)[1].lower()
         if ext in IMAGE_EXTENSIONS:
+            output_path = os.path.splitext(full_path)[0] + ".json"
+            if not overwrite and os.path.exists(output_path):
+                continue
             image_paths.append(full_path)
 
     if not image_paths:
@@ -308,6 +331,17 @@ def main() -> None:
         default="high",
         help="Image detail level to send to the model (default: high)",
     )
+    parser.add_argument(
+        "--max-concurrency",
+        type=int,
+        default=5,
+        help="Number of concurrent OpenAI requests (default: 5)",
+    )
+    parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Regenerate labels even if a sidecar .json already exists",
+    )
     args = parser.parse_args()
 
     directory = args.directory
@@ -316,7 +350,15 @@ def main() -> None:
         print(f"Error: {directory} is not a valid directory")
         sys.exit(1)
 
-    asyncio.run(process_directory(directory, model=args.model, detail=args.detail))
+    asyncio.run(
+        process_directory(
+            directory,
+            max_concurrency=args.max_concurrency,
+            model=args.model,
+            detail=args.detail,
+            overwrite=args.overwrite,
+        )
+    )
 
 
 if __name__ == "__main__":

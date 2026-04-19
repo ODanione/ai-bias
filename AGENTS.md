@@ -103,6 +103,10 @@ When changing project structure, publishing rules, or secret handling, update:
 
 Keep the documentation consistent with the actual storage split between GitHub and Hugging Face.
 
+## Python environment
+
+Always run Python scripts using `.venv/bin/python` (or `.venv/bin/pip`), not the system `python`. The project dependencies (e.g. `openai`) are installed inside the local `.venv` virtualenv.
+
 ## Recommended workflow for future agents
 
 1. Check whether the task affects code, local-only data, or the public dataset.

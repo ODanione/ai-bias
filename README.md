@@ -52,19 +52,9 @@ Current policy:
   - `_Obsolete/`
   - local secrets and local virtual environments
 
-This split exists because the public dataset is limited to AI-generated images that are under project control, while third-party and reference material remain local-only.
+This split exists because the public dataset is limited to AI-generated images that are under project control, while third-party and reference material remain local-only. In particular, `GoogleSearch/` and `AdobeStock/` are excluded from public dataset publication because they contain third-party images with separate IP, copyright, and licensing constraints.
 
 ## Corpus shape
-
-The image corpus currently contains 1,392 image files across the main source folders:
-
-- `AdobeStock`: 240 images
-- `FLUX`: 250 images
-- `FLUX2`: 320 images
-- `GoogleSearch`: 186 images
-- `NanoBanana`: 72 images
-- `Qwen`: 96 images
-- `Sora`: 228 images
 
 Most folders are organized as `SOURCE/CATEGORY/...`, where category names include:
 
@@ -104,7 +94,7 @@ License note for AI-generated folders: project metadata and documentation can be
 
 For both search-based sources, the collection rule was intentionally simple: use the search function for each target label and keep the first 24 sensible results. Obviously irrelevant results were skipped, for example comic or cartoon images, non-person results, or images that clearly did not match the intended query.
 
-These folders are rough reference samples only. They are not controlled datasets and are not published as part of the public Hugging Face dataset.
+These folders are rough reference samples only. They are not controlled datasets and are not published as part of the public Hugging Face dataset. The intent is to keep the source images local because they come from third-party providers, while still allowing small derived artifacts such as labels, aggregate statistics, and documentation to be shared separately when appropriate.
 
 ## Current labeled subset
 
