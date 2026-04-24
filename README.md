@@ -19,7 +19,7 @@ The Hugging Face dataset is the canonical home for the large AI-generated image 
 The repository mixes image collections, labeling helpers, and lightweight analysis tooling.
 
 - `images/AdobeStock/`, `images/GoogleSearch/`: quick reference samples used as a rough check of what bias looks like in internet-visible imagery, based on the first 24 images found per category.
-- `images/FLUX/`, `images/FLUX2/`, `images/DALL-E/`, `images/NanoBanana/`, `images/Qwen/`: AI-generated image sets grouped by prompt target such as `CEO`, `Cashier`, `Doctor`, `Teacher`, or `Person`.
+- `images/FLUX/`, `images/FLUX2/`, `images/DALL-E/`, `images/GPTImages2/`, `images/NanoBanana/`, `images/Qwen/`: AI-generated image sets grouped by prompt target such as `CEO`, `Cashier`, `Doctor`, `Teacher`, or `Person`.
 - `Papers/`: background reading related to the topic.
 - `statistics.json`: the currently aggregated structured labels used by the explorer UI.
 - `charactgeristics.json`: a JSON schema draft for the person-attribute labels.
@@ -45,6 +45,7 @@ Current policy:
   - local `images/NanoBanana/` syncs to remote `NanoBanana/`
   - local `images/Qwen/` syncs to remote `Qwen/`
   - local `images/DALL-E/` syncs to remote `DALL-E/`
+  - local `images/GPTImages2/` syncs to remote `GPTImages2/`
 - Not published as part of the public dataset:
   - `images/AdobeStock/`
   - `images/GoogleSearch/`
@@ -82,10 +83,11 @@ The image folders mix AI-generated sources and search-based reference sources. T
 - `images/NanoBanana/`: images generated with Google's Gemini 2.5 Flash Image family. Google introduced Gemini 2.5 Flash Image on August 26, 2025 and explicitly described it as "aka nano-banana". This is a closed Google model delivered through the Gemini API, Google AI Studio, and Vertex AI rather than open weights.
 - `images/Qwen/`: images generated with Qwen-Image from Alibaba's Qwen team. Qwen announced Qwen-Image on August 4, 2025 as a 20B image foundation model and released weights publicly on Hugging Face and ModelScope. In practice this makes `images/Qwen/` the open-weight image-generator bucket in this repo.
 - `images/DALL-E/`: images generated with OpenAI DALL-E. DALL-E is a closed OpenAI image-generation model family and service rather than an open-weight release.
+- `images/GPTImages2/`: images generated with OpenAI ChatGPT Images 2.0 / GPT Image 2 through the ChatGPT web interface at `https://chatgpt.com/`. OpenAI introduced ChatGPT Images 2.0 on April 21, 2026; it is the successor source to the older DALL-E bucket in this project.
 
 These folders represent model-controlled outputs rather than third-party reference imagery, which is why they are the folders intended for publication in the Hugging Face dataset repo.
 
-License note for AI-generated folders: project metadata and documentation can be published under `CC-BY 4.0`, but the generated images themselves may also remain subject to the license terms, usage policies, or service terms of their upstream model providers. In other words, the dataset should not imply that `CC-BY 4.0` is the only governing layer for `images/FLUX/`, `images/FLUX2/`, `images/NanoBanana/`, `images/Qwen/`, or `images/DALL-E/`.
+License note for AI-generated folders: project metadata and documentation can be published under `CC-BY 4.0`, but the generated images themselves may also remain subject to the license terms, usage policies, or service terms of their upstream model providers. In other words, the dataset should not imply that `CC-BY 4.0` is the only governing layer for `images/FLUX/`, `images/FLUX2/`, `images/NanoBanana/`, `images/Qwen/`, `images/DALL-E/`, or `images/GPTImages2/`.
 
 ### Search-based reference sources
 
@@ -211,7 +213,7 @@ Local image folders live under `images/`, but the Hugging Face dataset intention
 .venv/bin/python sync_hf_images.py
 ```
 
-The sync script uploads only `images/FLUX/`, `images/FLUX2/`, `images/NanoBanana/`, `images/Qwen/`, and `images/DALL-E/`. It does not publish `images/AdobeStock/` or `images/GoogleSearch/`.
+The sync script uploads only `images/FLUX/`, `images/FLUX2/`, `images/NanoBanana/`, `images/Qwen/`, `images/DALL-E/`, and `images/GPTImages2/`. It does not publish `images/AdobeStock/` or `images/GoogleSearch/`.
 
 ## Interpretation and limitations
 

@@ -23,6 +23,7 @@ Only the AI-generated image folders under `images/` are intended for the public 
 - `images/NanoBanana/`
 - `images/Qwen/`
 - `images/DALL-E/`
+- `images/GPTImages2/`
 
 Do not publish these folders to GitHub unless the user explicitly changes the repository strategy.
 
@@ -51,8 +52,11 @@ The scripts currently assume the existing local folder structure, especially und
 - `images/NanoBanana/`
 - `images/Qwen/`
 - `images/DALL-E/`
+- `images/GPTImages2/`
 
 Do not change those script assumptions casually. If a folder layout is changed, update the scripts and the documentation in the same task.
+
+Rasterized contact sheets should be saved one level above the category folder they summarize. For example, a raster generated from `images/GPTImages2/Person/` should be written to `images/GPTImages2/raster_person.jpg`, not into `paper/figures/` or inside the `Person/` folder.
 
 ## Secrets
 

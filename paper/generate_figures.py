@@ -8,13 +8,15 @@ from pathlib import Path
 
 import matplotlib
 matplotlib.use("Agg")
+from matplotlib.figure import Figure
 import matplotlib.font_manager as fm
 import matplotlib.lines as mlines
+from matplotlib.patches import Rectangle
 import matplotlib.pyplot as plt
 import pandas as pd
 from plotnine import (
     ggplot, aes,
-    geom_col, geom_hline, geom_vline, geom_text,
+    geom_col, geom_hline, geom_vline, geom_point, geom_text,
     scale_fill_manual, scale_fill_identity, scale_color_identity, scale_alpha_identity,
     scale_y_continuous, scale_x_discrete,
     annotate,
@@ -44,7 +46,7 @@ LI_DIR.mkdir(exist_ok=True)
 # ---------------------------------------------------------------------------
 # Source ordering & labels
 # ---------------------------------------------------------------------------
-SOURCE_ORDER = ["GoogleSearch", "AdobeStock", "FLUX", "FLUX2", "NanoBanana", "Qwen", "DALL-E"]
+SOURCE_ORDER = ["GoogleSearch", "AdobeStock", "FLUX", "FLUX2", "NanoBanana", "Qwen", "DALL-E", "GPTImages2"]
 SOURCE_LABELS = {
     "GoogleSearch": "Google\nSearch",
     "AdobeStock":   "Adobe\nStock",
@@ -53,6 +55,7 @@ SOURCE_LABELS = {
     "NanoBanana":   "Nano\nBanana",
     "Qwen":         "Qwen",
     "DALL-E":       "DALL-E",
+    "GPTImages2":   "GPT\nImages 2",
 }
 REFERENCE_SOURCES = {"GoogleSearch", "AdobeStock"}
 BASELINE_LABEL    = "World\nbaseline"
@@ -315,9 +318,10 @@ def _save(p, name, style, df=None):
     outdir    = OUT_DIR if style == "paper" else LI_DIR
     w, h, dpi = (10, 5.6, 150) if style == "paper" else (10, 6.8, 200)
 
-    fig = p.draw()
+    fig = p if isinstance(p, Figure) else p.draw()
     fig.set_size_inches(w, h)
-    _postprocess_bars(fig, df)
+    if df is not None:
+        _postprocess_bars(fig, df)
 
     # Thin accent line at the very top of the figure
     fig.add_artist(mlines.Line2D(
@@ -464,11 +468,11 @@ def figure_world_pop_vs_ai(data):
 # ---------------------------------------------------------------------------
 _PROFILE_ITEMS = [
     # (group, label, baseline_pct, bar_color)
-    ("Gender",   "female",              WORLD_GENDER["female"]             * 100, PALETTE["female"]),
     ("Gender",   "male",                WORLD_GENDER["male"]               * 100, PALETTE["male"]),
+    ("Gender",   "female",              WORLD_GENDER["female"]             * 100, PALETTE["female"]),
+    ("Ancestry", "Asian",               WORLD_ANCESTRY["Asian"]               * 100, PALETTE["Asian"]),
     ("Ancestry", "West Eurasian",       WORLD_ANCESTRY["West Eurasian"]       * 100, PALETTE["West Eurasian"]),
     ("Ancestry", "Sub-Saharan African", WORLD_ANCESTRY["Sub-Saharan African"] * 100, PALETTE["Sub-Saharan African"]),
-    ("Ancestry", "Asian",               WORLD_ANCESTRY["Asian"]               * 100, PALETTE["Asian"]),
     ("Ancestry", "Other",               WORLD_ANCESTRY["Other"]               * 100, PALETTE["Other"]),
     ("Age",      "0–14",               WORLD_AGE["0–14"]                  * 100, PALETTE["0–14"]),
     ("Age",      "15–29",              WORLD_AGE["15–29"]                 * 100, PALETTE["15–29"]),
@@ -479,7 +483,7 @@ _PROFILE_ITEMS = [
 
 
 def figure_model_profile(data, source_name, style="paper"):
-    """Deviation-from-baseline horizontal bar chart for a single source."""
+    """Observed-share chart with baseline markers for a single source."""
     src_recs  = [r for r in data if r.get("source") == source_name]
     n         = len(src_recs) or 1
     age_recs  = [r for r in src_recs if isinstance(r.get("age_estimate"), (int, float))]
@@ -498,88 +502,147 @@ def figure_model_profile(data, source_name, style="paper"):
         if group == "Age":      return ag_ctr.get(label,  0) / n_age * 100
         return 0.0
 
+    def _score(group_rows):
+        tvd = 0.005 * sum(abs(row["ai_pct"] - row["baseline"]) for row in group_rows)
+        max_tvd = 1 - min(row["baseline"] / 100 for row in group_rows)
+        baseline_mismatch = tvd / max_tvd if max_tvd > 0 else 0.0
+
+        max_generated_share = max(row["ai_pct"] / 100 for row in group_rows)
+        max_baseline_share = max(row["baseline"] / 100 for row in group_rows)
+        concentration_gap = (
+            (max_generated_share - max_baseline_share) / (1 - max_baseline_share)
+            if max_generated_share > max_baseline_share and max_baseline_share < 1
+            else 0.0
+        )
+
+        return 10 * max(baseline_mismatch, concentration_gap)
+
+    def _score_color(score):
+        if score < 2: return "#2EAD66"
+        if score < 4: return "#A6C84C"
+        if score < 6: return "#F2B84B"
+        if score < 8: return "#E67E22"
+        return "#D64545"
+
     rows = []
     for group, label, baseline, color in _PROFILE_ITEMS:
         ai_val  = _ai(group, label)
-        raw_dev = ai_val - baseline
-        # Normalize by max possible deviation so bands are comparable across baselines:
-        # +100% = category fills all images; -100% = category is completely absent
-        if raw_dev >= 0:
-            dev = raw_dev / (100 - baseline) * 100 if (100 - baseline) > 0 else 0.0
+        if group == "Gender":
+            count = g_ctr.get(label, 0)
+            denom = n
+        elif group == "Ancestry":
+            count = an_ctr.get(label, 0)
+            denom = n
         else:
-            dev = raw_dev / baseline * 100 if baseline > 0 else 0.0
+            count = ag_ctr.get(label, 0)
+            denom = n_age
         rows.append({
             "group":     group,
             "label":     label,
-            "deviation": dev,
+            "ai_pct":    ai_val,
+            "baseline":  baseline,
             "color":     color,
-            "dev_label": f"{dev:+.0f}%",
+            "count":     count,
+            "denom":     denom,
+            "label_x":   103,
+            "bar_label": f"{count}/{denom} · {ai_val:.0f}%",
         })
 
     df = pd.DataFrame(rows)
-    # Factor ordering: reversed so first item appears at top after coord_flip
-    df["label"] = pd.Categorical(
-        df["label"],
-        categories=[item[1] for item in reversed(_PROFILE_ITEMS)],
-        ordered=True,
-    )
-    df["group"] = pd.Categorical(
-        df["group"], categories=["Gender", "Ancestry", "Age"], ordered=True
-    )
-
-    df_pos = df[df["deviation"] >= 0].copy()
-    df_neg = df[df["deviation"] <  0].copy()
-
     display = SOURCE_LABELS.get(source_name, source_name).replace("\n", " ")
     base    = 13 if style == "paper" else 16
-    lsz     = 9  if style == "paper" else 11
+    lsz     = 10 if style == "paper" else 12
+    groups  = ["Gender", "Ancestry", "Age"]
+    heights = [2, 4, 5]
 
-    _I = float("inf")
-    p = (
-        ggplot(df, aes(x="label", y="deviation", fill="color"))
-        # Background interpretation bands (drawn first, underneath bars)
-        # Scale: −100% = completely absent, 0% = matches baseline, +100% = fully saturated
-        + annotate("rect", xmin=-_I, xmax=_I, ymin=-20, ymax=20,
-                   fill="#27AE60", alpha=0.18)
-        + annotate("rect", xmin=-_I, xmax=_I, ymin=20,  ymax=50,
-                   fill="#F39C12", alpha=0.18)
-        + annotate("rect", xmin=-_I, xmax=_I, ymin=-50, ymax=-20,
-                   fill="#F39C12", alpha=0.18)
-        + annotate("rect", xmin=-_I, xmax=_I, ymin=50,  ymax=_I,
-                   fill="#E74C3C", alpha=0.18)
-        + annotate("rect", xmin=-_I, xmax=_I, ymin=-_I, ymax=-50,
-                   fill="#E74C3C", alpha=0.18)
-        + geom_col(width=0.65, color="none", size=0)
-        + geom_hline(yintercept=0, color="#333333", size=0.6)
-        + geom_text(
-            data=df_pos, mapping=aes(label="dev_label"),
-            ha="left", nudge_y=1.0, size=lsz, color="#555555",
-        )
-        + geom_text(
-            data=df_neg, mapping=aes(label="dev_label"),
-            ha="right", nudge_y=-1.0, size=lsz, color="#555555",
-        )
-        + coord_flip()
-        + scale_fill_identity()
-        + scale_y_continuous(
-            labels=lambda ticks: [f"{int(round(t)):+d}%" for t in ticks],
-            limits=(-120, 120),
-            expand=(0, 0),
-        )
-        + facet_grid("group ~ .", scales="free_y", space="free_y")
-        + labs(
-            title    = f"Diversity profile: {display}",
-            subtitle = "Normalized representation gap  ·  0% = matches baseline  ·  −100% = absent  ·  +100% = fully saturated",
-            caption  = CAPTION,
-        )
-        + _theme(style)
-        + theme(
-            axis_text_y      = element_text(family=_FONT, size=base - 1, color="#444444"),
-            strip_background = element_rect(fill="#F0F0F0", color="none"),
-            strip_text_y     = element_text(family=_FONT, face="bold", size=base - 1),
-        )
+    fig, axes = plt.subplots(
+        len(groups), 1,
+        gridspec_kw={"height_ratios": heights, "hspace": 0.10},
+        constrained_layout=False,
     )
-    return p
+
+    fig.patch.set_facecolor("white")
+    fig.subplots_adjust(left=0.16, right=0.84, top=0.76, bottom=0.16)
+    fig.suptitle(
+        f"Diversity profile: {display}",
+        x=0.16, y=0.945, ha="left",
+        fontsize=base + 7, fontweight="bold", fontfamily=_FONT, color="#222222",
+    )
+    fig.text(
+        0.16, 0.875,
+        "Bar = generated share · black diamond = real-world baseline · label = generated count · ring = gap score",
+        ha="left", va="center", fontsize=base - 2, fontfamily=_FONT, color="#777777",
+    )
+
+    for ax, group in zip(axes, groups):
+        group_rows = df[df["group"] == group].to_dict("records")
+        y = list(range(len(group_rows)))
+        labels = [row["label"] for row in group_rows]
+
+        ax.barh(y, [row["ai_pct"] for row in group_rows],
+                height=0.65, color=[row["color"] for row in group_rows], edgecolor="none")
+        ax.scatter([row["baseline"] for row in group_rows], y,
+                   marker="D", s=54 if style == "paper" else 70,
+                   facecolors="white", edgecolors="#222222", linewidths=1.3, zorder=5)
+
+        for yi, row in zip(y, group_rows):
+            ax.text(103, yi, row["bar_label"],
+                    ha="left", va="center", fontsize=lsz,
+                    fontfamily=_FONT, color="#555555")
+
+        ax.set_xlim(-4, 132)
+        ax.set_ylim(-0.6, len(group_rows) - 0.4)
+        ax.invert_yaxis()
+        ax.set_yticks(y)
+        ax.set_yticklabels(labels, fontfamily=_FONT, fontsize=base, color="#444444")
+        ax.tick_params(axis="y", length=0, pad=8)
+        ax.set_xticks([0, 25, 50, 75, 100])
+        ax.set_xticklabels([f"{tick}%" for tick in [0, 25, 50, 75, 100]],
+                           fontfamily=_FONT, fontsize=base, color="#444444")
+        ax.grid(axis="x", color="#E5E5E5", linewidth=0.8)
+        ax.grid(axis="y", color="#EEEEEE", linewidth=0.6)
+        ax.set_axisbelow(True)
+        for side in ("top", "right", "left"):
+            ax.spines[side].set_visible(False)
+        ax.spines["bottom"].set_color("#CCCCCC")
+
+        score = _score(group_rows)
+        score_color = _score_color(score)
+
+        ax.add_patch(Rectangle(
+            (1.010, 0.0), 0.055, 1.0,
+            transform=ax.transAxes,
+            facecolor="#F0F0F0",
+            edgecolor="none",
+            clip_on=False,
+            zorder=2,
+        ))
+        ax.text(1.0375, 0.50, group, transform=ax.transAxes,
+                rotation=-90, ha="center", va="center",
+                fontsize=base, fontweight="bold", fontfamily=_FONT, color="#222222",
+                clip_on=False, zorder=3)
+        ax.scatter([1.135], [0.50], transform=ax.transAxes,
+                   s=1120 if style == "paper" else 1500,
+                   facecolors="white", edgecolors=score_color, linewidths=5,
+                   clip_on=False, zorder=10)
+        ax.annotate("GAP", xy=(1.135, 0.50), xycoords=ax.transAxes,
+                    xytext=(0, 6), textcoords="offset points",
+                    ha="center", va="center", fontsize=base - 6,
+                    fontweight="bold", fontfamily=_FONT, color="#666666",
+                    clip_on=False, zorder=11)
+        ax.annotate(f"{score:.1f}", xy=(1.135, 0.50), xycoords=ax.transAxes,
+                    xytext=(0, -5), textcoords="offset points",
+                    ha="center", va="center", fontsize=base + 2,
+                    fontweight="bold", fontfamily=_FONT, color="#222222",
+                    clip_on=False, zorder=11)
+
+    for ax in axes[:-1]:
+        ax.tick_params(axis="x", labelbottom=False)
+        ax.spines["bottom"].set_visible(False)
+
+    fig.text(0.16, 0.065, CAPTION, ha="left", va="center",
+             fontsize=base - 5, fontfamily=_FONT, color="#A0A0A0")
+    return fig
 
 
 def figure_all_profiles(data):

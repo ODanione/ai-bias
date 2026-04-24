@@ -5,7 +5,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent
 IMAGE_ROOT = REPO_ROOT / "images"
 
-PUBLIC_DATASET_SOURCES = ("FLUX", "FLUX2", "NanoBanana", "Qwen", "DALL-E")
+PUBLIC_DATASET_SOURCES = ("FLUX", "FLUX2", "NanoBanana", "Qwen", "DALL-E", "GPTImages2")
 LOCAL_REFERENCE_SOURCES = ("AdobeStock", "GoogleSearch")
 LOCAL_IMAGE_SOURCES = PUBLIC_DATASET_SOURCES + LOCAL_REFERENCE_SOURCES
 

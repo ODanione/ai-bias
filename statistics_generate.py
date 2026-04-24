@@ -69,6 +69,7 @@ def collect_persons(base_dir: str) -> List[Dict[str, Any]]:
     and attach 'person_type' to it.
     """
     persons: List[Dict[str, Any]] = []
+    source = os.path.basename(os.path.normpath(base_dir))
 
     if not os.path.isdir(base_dir):
         raise NotADirectoryError(f"{base_dir!r} is not a directory")
@@ -93,8 +94,9 @@ def collect_persons(base_dir: str) -> List[Dict[str, Any]]:
                 with open(file_path, "r", encoding="utf-8") as f:
                     text = f.read()
                 data = extract_json_from_text(text)
-                # Attach person_type
                 data["person_type"] = person_type
+                data.setdefault("source", source)
+                data.setdefault("image_file", os.path.splitext(item.name)[0])
                 persons.append(data)
             except Exception as e:
                 # You can change this to logging if you prefer
@@ -112,12 +114,15 @@ def main() -> None:
     )
     parser.add_argument(
         "base_dir",
-        help="Base directory containing person_type subdirectories",
+        nargs="+",
+        help="One or more source directories containing person_type subdirectories",
     )
     args = parser.parse_args()
 
-    base_dir = os.path.abspath(resolve_image_path(args.base_dir))
-    persons = collect_persons(base_dir)
+    persons: List[Dict[str, Any]] = []
+    for raw_base_dir in args.base_dir:
+        base_dir = os.path.abspath(resolve_image_path(raw_base_dir))
+        persons.extend(collect_persons(base_dir))
 
     output_path = os.path.join(os.getcwd(), "statistics.json")
     with open(output_path, "w", encoding="utf-8") as out_f:

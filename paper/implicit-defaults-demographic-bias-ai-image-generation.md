@@ -60,12 +60,13 @@ The resulting prompts were therefore not identical strings, but model-adapted mi
 | Qwen | *"A photorealistic image of a person."* | Qwen produced suitable outputs with a shorter realism cue, so no camera or studio details were added. This kept the prompt closer to the neutral subject phrase. |
 | NanoBanana | *"A photorealistic portrait of a person in 1.2 x 1 format."* | The portrait and aspect-format wording was used to keep API outputs close to the intended crop and image proportions while leaving the subject demographically unspecified. |
 | DALL-E | *"A photorealistic portrait of a person."* | DALL-E required only a minimal photorealistic portrait instruction to produce comparable images. No aspect-ratio wording was added beyond the default generation settings. |
+| GPT Images 2 | *"A photorealistic portrait of a person."* | The same minimal OpenAI prompt was used for the newer ChatGPT Images 2.0 interface to support direct comparison with the older DALL-E source. |
 
 This design prioritises comparability over literal prompt uniformity. A fully identical prompt would not necessarily produce comparable image types across models, because each system responds differently to sparse prompts and exposes different controls. Conversely, adding detailed style, clothing, location, or camera-scene descriptions would risk introducing new bias cues. The selected prompts therefore aim to isolate the model's implicit demographic defaults while controlling only for image type: a photorealistic portrait of an otherwise unspecified person.
 
 ### 3.2 Image sources
 
-Seven sources were used, divided into two groups:
+Eight sources were used, divided into two groups:
 
 **Reference sources (internet imagery):**
 - **Google Image Search** — first 24 results for the query *"Person"*, collected from a single geographic location (Germany) in a single session.
@@ -80,8 +81,9 @@ All local models were run using **ComfyUI** as the inference framework. Images w
 | FLUX | FLUX.1 DEV | FP8 e4m3fn | CLIP-L + T5-XXL FP8 | Euler / Beta | 30 | 4.0 | 1536 × 2048 |
 | FLUX 2 | FLUX.2 DEV | GGUF Q4\_K\_M | Mistral 3 Small FP8 | Euler / Flux2Scheduler | 30 | 4.0 | 1280 × 1080 |
 | Qwen | Qwen Image | FP8 e4m3fn | Qwen 2.5-VL 7B FP8 | Euler / Simple | 20 | 2.5 (CFG) | 1280 × 1088 |
-| NanoBanana | Google Gemini 2.0 Flash Image Generation | closed weights | — | — | — | — | — |
-| DALL-E | OpenAI DALL-E | closed weights | — | — | — | — | — |
+| NanoBanana | Google Gemini 2.0 Flash Image Generation | closed weights | — | — | — | — | 2272 × 1888 |
+| DALL-E | OpenAI DALL-E | closed weights | — | — | — | — | 1024 × 1024 |
+| GPT Images 2 | OpenAI ChatGPT Images 2.0 / GPT Image 2 | closed weights | — | — | — | — | 1372 × 1146 |
 
 Additional technical notes per model:
 
@@ -95,7 +97,11 @@ Additional technical notes per model:
 
 - **DALL-E (OpenAI DALL-E):** Accessed via the commercial web interface. Model weights and architecture are not publicly disclosed. Default generation settings were used.
 
-Each source contributes 24 images, for a total of 168 images in this pilot.
+- **GPT Images 2 (OpenAI ChatGPT Images 2.0 / GPT Image 2):** Accessed through the ChatGPT web interface at `https://chatgpt.com/`. OpenAI introduced ChatGPT Images 2.0 on April 21, 2026 [@openai_chatgpt_images_2_2026]; the corresponding API model is `gpt-image-2` [@openai_gpt_image_2_model].
+
+Resolution values for closed web/API systems are the observed dimensions of the saved image files. GPT Images 2 outputs varied by one pixel in width across the sample (18 images at 1372 × 1146 and 6 images at 1373 × 1146).
+
+Each source contributes 24 images, for a total of 192 images in this pilot.
 
 ### 3.3 Attribute labeling
 
@@ -201,19 +207,19 @@ For occupational prompts (CEO, Doctor, Housekeeper, etc.), ILO labour force stat
 
 ![Perceived gender distribution by source](figures/gender_by_source.png)
 
-*(Key finding to be written. Preliminary: female 54%, male 46% overall, but with notable variation across sources.)*
+*(Key finding to be written. Preliminary: female 57%, male 43% overall, but with notable variation across sources.)*
 
 ### 4.2 Perceived ancestry cluster
 
 ![Perceived ancestry cluster by source](figures/ancestry_by_source.png)
 
-*(Key finding to be written. Preliminary: West Eurasian = 70% overall across all sources, Sub-Saharan African = 15%, East Asian = 13%, South Asian = 1%.)*
+*(Key finding to be written. Preliminary: West Eurasian = 74% overall across all sources, Sub-Saharan African = 14%, East Asian = 11%, South Asian = 1%.)*
 
 ### 4.3 Skin tone
 
 ![Skin tone distribution by source](figures/skin_tone_by_source.png)
 
-*(Key finding to be written. Preliminary: light skin tone = 77% overall.)*
+*(Key finding to be written. Preliminary: light skin tone = 80% overall.)*
 
 ### 4.4 Age distribution
 
@@ -233,9 +239,23 @@ For occupational prompts (CEO, Doctor, Housekeeper, etc.), ILO labour force stat
 
 ## 5. Model Profiles
 
-To complement the cross-source comparisons in Section 4, we present a per-model diversity profile for each source. Each profile shows, for a single source, the percentage-point deviation from the real-world baseline across all measured categorical attributes for which a baseline exists: perceived gender, perceived ancestry cluster, and age group. Skin tone is excluded from this analysis because no empirically grounded global baseline was identified (see Section 3.4).
+To complement the cross-source comparisons in Section 4, we present a per-model diversity profile for each source. Each profile shows, for a single source, the generated share for all measured categorical attributes for which a real-world baseline exists: perceived gender, perceived ancestry cluster, and age group. Skin tone is excluded from this analysis because no empirically grounded global baseline was identified (see Section 3.4).
 
-A bar pointing **right** indicates overrepresentation relative to the baseline; a bar pointing **left** indicates underrepresentation. The vertical line at 0 pp represents a perfect match with the real-world distribution.
+For each attribute group, we also compute a **Diversity Gap Score**. The score combines two intuitions: distributional mismatch from the real-world baseline, and category collapse. The first component is normalized total variation distance:
+
+`baseline_mismatch = (0.5 × Σ |generated_share_i − baseline_share_i|) / (1 − min(baseline_share_i))`
+
+The second component captures whether the generated images collapse into a single category more strongly than the real-world baseline does:
+
+`concentration_gap = (max(generated_share_i) − max(baseline_share_i)) / (1 − max(baseline_share_i))`
+
+when `max(generated_share_i)` is larger than `max(baseline_share_i)`, and 0 otherwise. The final score is:
+
+`score = 10 × max(baseline_mismatch, concentration_gap)`
+
+where `i` runs over the categories in that attribute group. A score of 0 means the generated distribution exactly matches the baseline; a score of 10 means either maximum possible divergence from the baseline or complete collapse into one category. This makes the score comparable across attributes while preserving the intuitive interpretation that, for example, an all-female, all-male, or single-ancestry output set is maximally concentrated.
+
+In these charts, the coloured bar shows the observed share in the generated sample, the label gives the count out of 24 images, and the black diamond marks the real-world baseline. The circular **GAP** badge reports the Diversity Gap Score for the full attribute group. This avoids compressing different baselines into a single normalized per-category score: for example, a category with a 10% baseline and 0 observed images remains visibly absent rather than being treated as a small generic deviation.
 
 ### 5.1 Google Search
 
@@ -276,6 +296,12 @@ FLUX generates exclusively female images for the prompt "Person" (+50 pp above t
 ### 5.7 DALL-E
 
 ![Diversity profile: DALL-E](figures/profile_dall-e.png)
+
+*(Key finding to be written.)*
+
+### 5.8 GPT Images 2
+
+![Diversity profile: GPT Images 2](figures/profile_gptimages2.png)
 
 *(Key finding to be written.)*
 
