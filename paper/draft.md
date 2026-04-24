@@ -47,22 +47,39 @@ This is an exploratory pilot study. All results are based on small samples (n=24
 
 ### 3.1 Prompt design
 
-All images were collected or generated using a single neutral prompt per category. For this pilot, the prompt is **"Person"** — intentionally generic to surface default assumptions with no occupational or contextual framing.
+All images were collected or generated using a single neutral subject prompt per category. For this pilot, the subject is **"Person"** — intentionally generic to surface default assumptions with no occupational or contextual framing. Internet search sources used "Person" as the literal search query. For AI generative sources, a short photographic style qualifier was appended to aid realism (see Section 3.2); the subject specification remained identical across all AI models.
 
 ### 3.2 Image sources
 
 Seven sources were used, divided into two groups:
 
 **Reference sources (internet imagery):**
-- Google Image Search (first 24 results)
-- Adobe Stock (first 24 results)
+- **Google Image Search** — first 24 results for the query *"Person"*, collected from a single geographic location (Germany) in a single session.
+- **Adobe Stock** — first 24 results for the query *"Person"*, collected in the same session.
 
 **AI generative sources:**
-- FLUX
-- FLUX2
-- NanoBanana
-- Qwen
-- Sora
+
+All local models were run using **ComfyUI** as the inference framework. Images were generated one at a time with a fresh random seed per image.
+
+| Short name | Full model name | Quantization | Text encoder | Sampler | Steps | Guidance | Resolution |
+|---|---|---|---|---|---|---|---|
+| FLUX | FLUX.1 DEV | FP8 e4m3fn | CLIP-L + T5-XXL FP8 | Euler / Beta | 30 | 4.0 | 1536 × 2048 |
+| FLUX 2 | FLUX.2 DEV | GGUF Q4\_K\_M | Mistral 3 Small FP8 | Euler / Flux2Scheduler | 30 | 4.0 | 1280 × 1080 |
+| Qwen | Qwen Image | FP8 e4m3fn | Qwen 2.5-VL 7B FP8 | Euler / Simple | 20 | 2.5 (CFG) | 1280 × 1088 |
+| NanoBanana | Google Gemini 2.0 Flash Image Generation | closed weights | — | — | — | — | — |
+| Sora | OpenAI Sora 2 | closed weights | — | — | — | — | — |
+
+Additional technical notes per model:
+
+- **FLUX (FLUX.1 DEV):** Weights file `flux1-dev-fp8-e4m3fn.safetensors`; VAE `ae.safetensors`. Prompt: *"A portrait of a person. (hyper realistic, professional photoshoot, 16k)"*. No negative prompt. CFG scale 1.0 (effectively guidance-free; flow guidance set to 4.0 via FluxGuidance node).
+
+- **FLUX 2 (FLUX.2 DEV):** Weights file `flux2_dev_Q4_K_M.gguf` (GGUF-quantised); VAE `flux2-vae.safetensors`. Inference accelerated with SageAttention (auto mode) and EasyCache (reuse threshold 0.1, applied between 25–85% of steps). Prompt: *"A portrait of a person. (shot on Sony A7IV, 80mm lens, f/2.8, natural lighting)"*. No negative prompt.
+
+- **Qwen:** Weights file `qwen_image_fp8_e4m3fn.safetensors`; VAE `qwen_image_vae.safetensors`. Uses AuraFlow-style sampling (shift = 3.1). Prompt: *"A photorealistic image of a person."*. No negative prompt.
+
+- **NanoBanana (Google Gemini 2.0 Flash Image Generation):** Accessed via the commercial API. Model weights and architecture are not publicly disclosed. Default generation settings were used with no style modifiers. Prompt: *"A photorealistic image of a person."*
+
+- **Sora (OpenAI Sora 2):** Accessed via the commercial web interface. Model weights and architecture are not publicly disclosed. Default generation settings were used with no style modifiers. Prompt: *"A photorealistic image of a person."*
 
 Each source contributes 24 images, for a total of 168 images in this pilot.
 
@@ -73,7 +90,7 @@ Each image was labeled by a GPT-4o vision model using a structured prompt (see `
 | Attribute | Type | Notes |
 |---|---|---|
 | `perceived_gender` | categorical | Based on visual presentation only |
-| `perceived_ancestry_cluster` | categorical | Broad regional clusters; perceived, not genetic |
+| `perceived_ancestry_cluster` | categorical | Broad regional clusters; perceived, not genetic. Raw labels (East Asian, South Asian, West Eurasian, Sub-Saharan African, Other) are merged into four analysis categories (see Section 3.4) |
 | `age_estimate` | integer | Approximate age in years |
 | `skin_tone` | categorical | light / medium / brown / dark |
 | `eye_color` | categorical | |
@@ -111,15 +128,16 @@ Global median age is approximately 30 years, with significant regional variation
 
 Global population distribution by ancestry is approximated using broad geographic region shares (UN WPP 2024 [@un_wpp2024]):
 
-| Region | World population share (approx.) |
-|---|---|
-| South, Southeast & East Asia | ~55% |
-| Sub-Saharan Africa | ~15% |
-| West Eurasia / Europe / MENA | ~20% |
-| Americas | ~8% |
-| Other | ~2% |
+| Region | World population share (approx.) | Analysis category |
+|---|---|---|
+| South, Southeast & East Asia | ~55% | Asian |
+| Sub-Saharan Africa | ~15% | Sub-Saharan African |
+| West Eurasia / Europe / MENA | ~20% | West Eurasian |
+| Americas + Other | ~10% | Other |
 
-For skin tone specifically, a comparable global baseline could not be identified in the literature. Global skin tone statistics appear to be sparse and methodologically contested — the Fitzpatrick scale [@fitzpatrick1988skin], while widely used clinically, is noted to be Eurocentric and insufficient for capturing the full global spectrum of skin pigmentation [@quillen2019skincolor; @jablonski2010skincolor]. Skin tone results in this study are therefore presented descriptively, without comparison to a real-world reference. We use the four-level scale (*light, medium, brown, dark*) derived from visual labeling rather than the Fitzpatrick classification.
+The labeling model distinguishes East Asian and South Asian as separate raw labels. Because the world population baseline provides only a combined figure for South, Southeast & East Asia (~55%), both raw labels are merged into the single **Asian** category for all analyses and figures. No independent global estimate for East Asian vs. South Asian sub-populations was used, avoiding spurious precision.
+
+For skin tone specifically, no defensible global baseline was identified, and this absence is confirmed by the most recent literature. The Fitzpatrick scale [@fitzpatrick1988skin], while widely used clinically, is noted to be Eurocentric and insufficient for capturing the full global spectrum of skin pigmentation [@quillen2019skincolor; @jablonski2010skincolor]. The two most comprehensive recent empirical datasets — the International Skin Spectra Archive (ISSA), which covers 2,113 subjects across 8 ethnic groups [@issa2025], and Van Song et al.'s global CIELAB study of 2,770 women across six countries [@vansong2026] — both explicitly acknowledge incomplete geographic coverage and cannot be treated as representative global population baselines. A regional proxy approach (combining population shares with known skin tone distributions per region) would require sub-categorising the Asian cluster in ways that exceed the precision of our ancestry baseline, introducing more uncertainty than it resolves. Skin tone results in this study are therefore presented descriptively, without comparison to a real-world reference — a position consistent with the current state of the field [@npjskintone2024]. We use the four-level scale (*light, medium, brown, dark*) derived from visual labeling rather than the Fitzpatrick classification.
 
 #### Eye color
 
@@ -199,23 +217,73 @@ For occupational prompts (CEO, Doctor, Housekeeper, etc.), ILO labour force stat
 
 ---
 
-## 5. Discussion
+## 5. Model Profiles
 
-### 5.1 The three-layer framing
+To complement the cross-source comparisons in Section 4, we present a per-model diversity profile for each source. Each profile shows, for a single source, the percentage-point deviation from the real-world baseline across all measured categorical attributes for which a baseline exists: perceived gender, perceived ancestry cluster, and age group. Skin tone is excluded from this analysis because no empirically grounded global baseline was identified (see Section 3.4).
+
+A bar pointing **right** indicates overrepresentation relative to the baseline; a bar pointing **left** indicates underrepresentation. The vertical line at 0 pp represents a perfect match with the real-world distribution.
+
+### 5.1 Google Search
+
+![Diversity profile: Google Search](figures/profile_googlesearch.png)
+
+*(Key finding to be written.)*
+
+### 5.2 Adobe Stock
+
+![Diversity profile: Adobe Stock](figures/profile_adobestock.png)
+
+*(Key finding to be written.)*
+
+### 5.3 FLUX
+
+![Diversity profile: FLUX](figures/profile_flux.png)
+
+FLUX generates exclusively female images for the prompt "Person" (+50 pp above the near-equal baseline), and shows extreme West Eurasian overrepresentation (+76 pp). All other ancestry groups are underrepresented. In the age dimension, FLUX strongly concentrates on the 15–29 age group (+55 pp), with near-complete absence of children and seniors.
+
+### 5.4 FLUX 2
+
+![Diversity profile: FLUX 2](figures/profile_flux2.png)
+
+*(Key finding to be written.)*
+
+### 5.5 NanoBanana
+
+![Diversity profile: NanoBanana](figures/profile_nanobanana.png)
+
+*(Key finding to be written.)*
+
+### 5.6 Qwen
+
+![Diversity profile: Qwen](figures/profile_qwen.png)
+
+*(Key finding to be written.)*
+
+### 5.7 Sora
+
+![Diversity profile: Sora](figures/profile_sora.png)
+
+*(Key finding to be written.)*
+
+---
+
+## 6. Discussion
+
+### 6.1 The three-layer framing
 
 *(Discuss drift across layers: does AI amplify internet bias? Does internet imagery already diverge from world population? Where is the largest gap?)*
 
-### 5.2 Invisible defaults
+### 6.2 Invisible defaults
 
 The central practical takeaway is that omitting demographic attributes from prompts does not produce neutral output — it produces *default* output shaped by the model's training data. Users who are unaware of this may inadvertently produce demographically skewed content. Making these defaults visible is a prerequisite for making informed decisions about when and how to specify attributes explicitly.
 
-### 5.3 Implications for prompt design
+### 6.3 Implications for prompt design
 
 *(Brief practical guidance: explicitly specifying attributes gives predictable results; relying on defaults does not.)*
 
 ---
 
-## 6. Conclusion
+## 7. Conclusion
 
 *(To be written once results are complete.)*
 
