@@ -67,7 +67,7 @@ All local models were run using **ComfyUI** as the inference framework. Images w
 | FLUX 2 | FLUX.2 DEV | GGUF Q4\_K\_M | Mistral 3 Small FP8 | Euler / Flux2Scheduler | 30 | 4.0 | 1280 × 1080 |
 | Qwen | Qwen Image | FP8 e4m3fn | Qwen 2.5-VL 7B FP8 | Euler / Simple | 20 | 2.5 (CFG) | 1280 × 1088 |
 | NanoBanana | Google Gemini 2.0 Flash Image Generation | closed weights | — | — | — | — | — |
-| Sora | OpenAI Sora 2 | closed weights | — | — | — | — | — |
+| DALL-E | OpenAI DALL-E | closed weights | — | — | — | — | — |
 
 Additional technical notes per model:
 
@@ -79,7 +79,7 @@ Additional technical notes per model:
 
 - **NanoBanana (Google Gemini 2.0 Flash Image Generation):** Accessed via the commercial API. Model weights and architecture are not publicly disclosed. Default generation settings were used with no style modifiers. Prompt: *"A photorealistic image of a person."*
 
-- **Sora (OpenAI Sora 2):** Accessed via the commercial web interface. Model weights and architecture are not publicly disclosed. Default generation settings were used with no style modifiers. Prompt: *"A photorealistic image of a person."*
+- **DALL-E (OpenAI DALL-E):** Accessed via the commercial web interface. Model weights and architecture are not publicly disclosed. Default generation settings were used with no style modifiers. Prompt: *"A photorealistic image of a person."*
 
 Each source contributes 24 images, for a total of 168 images in this pilot.
 
@@ -259,9 +259,9 @@ FLUX generates exclusively female images for the prompt "Person" (+50 pp above t
 
 *(Key finding to be written.)*
 
-### 5.7 Sora
+### 5.7 DALL-E
 
-![Diversity profile: Sora](figures/profile_sora.png)
+![Diversity profile: DALL-E](figures/profile_dall-e.png)
 
 *(Key finding to be written.)*
 

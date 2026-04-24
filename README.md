@@ -19,7 +19,7 @@ The Hugging Face dataset is the canonical home for the large AI-generated image 
 The repository mixes image collections, labeling helpers, and lightweight analysis tooling.
 
 - `AdobeStock/`, `GoogleSearch/`: quick reference samples used as a rough check of what bias looks like in internet-visible imagery, based on the first 24 images found per category.
-- `FLUX/`, `FLUX2/`, `Sora/`, `NanoBanana/`, `Qwen/`: AI-generated image sets grouped by prompt target such as `CEO`, `Cashier`, `Doctor`, `Teacher`, or `Person`.
+- `FLUX/`, `FLUX2/`, `DALL-E/`, `NanoBanana/`, `Qwen/`: AI-generated image sets grouped by prompt target such as `CEO`, `Cashier`, `Doctor`, `Teacher`, or `Person`.
 - `Papers/`: background reading related to the topic.
 - `statistics.json`: the currently aggregated structured labels used by the explorer UI.
 - `charactgeristics.json`: a JSON schema draft for the person-attribute labels.
@@ -44,7 +44,7 @@ Current policy:
   - `FLUX2/`
   - `NanoBanana/`
   - `Qwen/`
-  - `Sora/`
+  - `DALL-E/`
 - Not published as part of the public dataset:
   - `AdobeStock/`
   - `GoogleSearch/`
@@ -81,11 +81,11 @@ The image folders mix AI-generated sources and search-based reference sources. T
 - `FLUX2/`: images generated with quantized local runs of Black Forest Labs' `FLUX.2 [dev]` model, i.e. the second-generation FLUX line rather than another FLUX.1 run. Black Forest Labs announced FLUX.2 on November 25, 2025. The broader FLUX.2 line mixes API products and open-weight releases, but this project's `FLUX2/` folder specifically refers to quantized `FLUX.2 [dev]` outputs.
 - `NanoBanana/`: images generated with Google's Gemini 2.5 Flash Image family. Google introduced Gemini 2.5 Flash Image on August 26, 2025 and explicitly described it as "aka nano-banana". This is a closed Google model delivered through the Gemini API, Google AI Studio, and Vertex AI rather than open weights.
 - `Qwen/`: images generated with Qwen-Image from Alibaba's Qwen team. Qwen announced Qwen-Image on August 4, 2025 as a 20B image foundation model and released weights publicly on Hugging Face and ModelScope. In practice this makes `Qwen/` the open-weight image-generator bucket in this repo.
-- `Sora/`: images generated with OpenAI Sora. OpenAI first published Sora research on February 15, 2024 and launched Sora as a product for ChatGPT users on December 9, 2024. Sora is a closed OpenAI model and service rather than an open-weight release.
+- `DALL-E/`: images generated with OpenAI DALL-E. DALL-E is a closed OpenAI image-generation model family and service rather than an open-weight release.
 
 These folders represent model-controlled outputs rather than third-party reference imagery, which is why they are the folders intended for publication in the Hugging Face dataset repo.
 
-License note for AI-generated folders: project metadata and documentation can be published under `CC-BY 4.0`, but the generated images themselves may also remain subject to the license terms, usage policies, or service terms of their upstream model providers. In other words, the dataset should not imply that `CC-BY 4.0` is the only governing layer for `FLUX/`, `FLUX2/`, `NanoBanana/`, `Qwen/`, or `Sora/`.
+License note for AI-generated folders: project metadata and documentation can be published under `CC-BY 4.0`, but the generated images themselves may also remain subject to the license terms, usage policies, or service terms of their upstream model providers. In other words, the dataset should not imply that `CC-BY 4.0` is the only governing layer for `FLUX/`, `FLUX2/`, `NanoBanana/`, `Qwen/`, or `DALL-E/`.
 
 ### Search-based reference sources
 

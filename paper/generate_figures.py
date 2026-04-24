@@ -44,7 +44,7 @@ LI_DIR.mkdir(exist_ok=True)
 # ---------------------------------------------------------------------------
 # Source ordering & labels
 # ---------------------------------------------------------------------------
-SOURCE_ORDER = ["GoogleSearch", "AdobeStock", "FLUX", "FLUX2", "NanoBanana", "Qwen", "Sora"]
+SOURCE_ORDER = ["GoogleSearch", "AdobeStock", "FLUX", "FLUX2", "NanoBanana", "Qwen", "DALL-E"]
 SOURCE_LABELS = {
     "GoogleSearch": "Google\nSearch",
     "AdobeStock":   "Adobe\nStock",
@@ -52,7 +52,7 @@ SOURCE_LABELS = {
     "FLUX2":        "FLUX 2",
     "NanoBanana":   "Nano\nBanana",
     "Qwen":         "Qwen",
-    "Sora":         "Sora",
+    "DALL-E":       "DALL-E",
 }
 REFERENCE_SOURCES = {"GoogleSearch", "AdobeStock"}
 BASELINE_LABEL    = "World\nbaseline"
