@@ -47,7 +47,21 @@ This is an exploratory pilot study. All results are based on small samples (n=24
 
 ### 3.1 Prompt design
 
-All images were collected or generated using a single neutral subject prompt per category. For this pilot, the subject is **"Person"** — intentionally generic to surface default assumptions with no occupational or contextual framing. Internet search sources used "Person" as the literal search query. For AI generative sources, a short photographic style qualifier was appended to aid realism (see Section 3.2); the subject specification remained identical across all AI models.
+All images were collected or generated using a single neutral subject prompt per category. For this pilot, the subject is **"Person"** — intentionally generic to surface default assumptions with no occupational or contextual framing. Internet search sources used "Person" as the literal search query.
+
+For AI generative sources, the prompt design followed two constraints. First, the subject phrase was kept as close as possible to the search query: a single unspecified person, with no stated gender, age, ethnicity, nationality, clothing, profession, social setting, or emotional expression. Second, each model was given only the minimal additional wording needed to obtain a usable photorealistic portrait in a broadly comparable image format. Without such wording, some systems may produce illustrations, full-body compositions, abstract images, or inconsistent crops, which would make demographic labeling less reliable and reduce comparability between sources.
+
+The resulting prompts were therefore not identical strings, but model-adapted minimal prompts with the same experimental intent:
+
+| Source | Prompt used | Design rationale |
+|---|---|---|
+| FLUX | *"A portrait of a person. (hyper realistic, professional photoshoot, 16k)"* | The core phrase *"a person"* leaves demographic attributes unspecified. The added terms encourage a high-resolution photographic portrait, which helps keep the local ComfyUI output close to the reference-image and API-generated formats. |
+| FLUX 2 | *"A portrait of a person. (shot on Sony A7IV, 80mm lens, f/2.8, natural lighting)"* | The camera and lighting phrase was used as a compact photographic prior. It encourages realistic portrait framing and natural lighting while avoiding demographic, occupational, or cultural cues. |
+| Qwen | *"A photorealistic image of a person."* | Qwen produced suitable outputs with a shorter realism cue, so no camera or studio details were added. This kept the prompt closer to the neutral subject phrase. |
+| NanoBanana | *"A photorealistic portrait of a person in 1.2 x 1 format."* | The portrait and aspect-format wording was used to keep API outputs close to the intended crop and image proportions while leaving the subject demographically unspecified. |
+| DALL-E | *"A photorealistic portrait of a person."* | DALL-E required only a minimal photorealistic portrait instruction to produce comparable images. No aspect-ratio wording was added beyond the default generation settings. |
+
+This design prioritises comparability over literal prompt uniformity. A fully identical prompt would not necessarily produce comparable image types across models, because each system responds differently to sparse prompts and exposes different controls. Conversely, adding detailed style, clothing, location, or camera-scene descriptions would risk introducing new bias cues. The selected prompts therefore aim to isolate the model's implicit demographic defaults while controlling only for image type: a photorealistic portrait of an otherwise unspecified person.
 
 ### 3.2 Image sources
 
@@ -71,15 +85,15 @@ All local models were run using **ComfyUI** as the inference framework. Images w
 
 Additional technical notes per model:
 
-- **FLUX (FLUX.1 DEV):** Weights file `flux1-dev-fp8-e4m3fn.safetensors`; VAE `ae.safetensors`. Prompt: *"A portrait of a person. (hyper realistic, professional photoshoot, 16k)"*. No negative prompt. CFG scale 1.0 (effectively guidance-free; flow guidance set to 4.0 via FluxGuidance node).
+- **FLUX (FLUX.1 DEV):** Weights file `flux1-dev-fp8-e4m3fn.safetensors`; VAE `ae.safetensors`. No negative prompt. CFG scale 1.0 (effectively guidance-free; flow guidance set to 4.0 via FluxGuidance node).
 
-- **FLUX 2 (FLUX.2 DEV):** Weights file `flux2_dev_Q4_K_M.gguf` (GGUF-quantised); VAE `flux2-vae.safetensors`. Inference accelerated with SageAttention (auto mode) and EasyCache (reuse threshold 0.1, applied between 25–85% of steps). Prompt: *"A portrait of a person. (shot on Sony A7IV, 80mm lens, f/2.8, natural lighting)"*. No negative prompt.
+- **FLUX 2 (FLUX.2 DEV):** Weights file `flux2_dev_Q4_K_M.gguf` (GGUF-quantised); VAE `flux2-vae.safetensors`. Inference accelerated with SageAttention (auto mode) and EasyCache (reuse threshold 0.1, applied between 25–85% of steps). No negative prompt.
 
-- **Qwen:** Weights file `qwen_image_fp8_e4m3fn.safetensors`; VAE `qwen_image_vae.safetensors`. Uses AuraFlow-style sampling (shift = 3.1). Prompt: *"A photorealistic image of a person."*. No negative prompt.
+- **Qwen:** Weights file `qwen_image_fp8_e4m3fn.safetensors`; VAE `qwen_image_vae.safetensors`. Uses AuraFlow-style sampling (shift = 3.1). No negative prompt.
 
-- **NanoBanana (Google Gemini 2.0 Flash Image Generation):** Accessed via the commercial API. Model weights and architecture are not publicly disclosed. Default generation settings were used with no style modifiers. Prompt: *"A photorealistic image of a person."*
+- **NanoBanana (Google Gemini 2.0 Flash Image Generation):** Accessed via the commercial API. Model weights and architecture are not publicly disclosed. Default generation settings were used.
 
-- **DALL-E (OpenAI DALL-E):** Accessed via the commercial web interface. Model weights and architecture are not publicly disclosed. Default generation settings were used with no style modifiers. Prompt: *"A photorealistic image of a person."*
+- **DALL-E (OpenAI DALL-E):** Accessed via the commercial web interface. Model weights and architecture are not publicly disclosed. Default generation settings were used.
 
 Each source contributes 24 images, for a total of 168 images in this pilot.
 
