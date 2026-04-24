@@ -7,17 +7,10 @@ OpenAI_APIKey.txt
 .env
 .env.*
 
-AdobeStock/
-FLUX/
-FLUX2/
+images/*
+!images/README.md
 FunFacts/
-GoogleSearch/
-NanoBanana/
 Papers/
-Qwen/
 Raw/
-DALL-E/
 TestData/
-_Obsolete/
-
 _Obsolete/

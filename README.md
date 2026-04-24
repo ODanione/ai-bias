@@ -12,14 +12,14 @@ This project is intentionally split across two remotes:
 - The AI-generated image corpus lives on Hugging Face: `https://huggingface.co/datasets/ODanione/ai-bias-images`
 
 The GitHub repository is the canonical home for scripts, prompts, schema drafts, and small derived artifacts such as `statistics.json`.
-The Hugging Face dataset is the canonical home for the large AI-generated image folders.
+The Hugging Face dataset is the canonical home for the large AI-generated image folders. Locally, image folders live under `images/`; on Hugging Face, the public AI-generated folders stay at the dataset repo root without an `images/` wrapper.
 
 ## What is in the repo
 
 The repository mixes image collections, labeling helpers, and lightweight analysis tooling.
 
-- `AdobeStock/`, `GoogleSearch/`: quick reference samples used as a rough check of what bias looks like in internet-visible imagery, based on the first 24 images found per category.
-- `FLUX/`, `FLUX2/`, `DALL-E/`, `NanoBanana/`, `Qwen/`: AI-generated image sets grouped by prompt target such as `CEO`, `Cashier`, `Doctor`, `Teacher`, or `Person`.
+- `images/AdobeStock/`, `images/GoogleSearch/`: quick reference samples used as a rough check of what bias looks like in internet-visible imagery, based on the first 24 images found per category.
+- `images/FLUX/`, `images/FLUX2/`, `images/DALL-E/`, `images/NanoBanana/`, `images/Qwen/`: AI-generated image sets grouped by prompt target such as `CEO`, `Cashier`, `Doctor`, `Teacher`, or `Person`.
 - `Papers/`: background reading related to the topic.
 - `statistics.json`: the currently aggregated structured labels used by the explorer UI.
 - `charactgeristics.json`: a JSON schema draft for the person-attribute labels.
@@ -40,14 +40,14 @@ The project contains three different classes of assets:
 Current policy:
 
 - Public on Hugging Face:
-  - `FLUX/`
-  - `FLUX2/`
-  - `NanoBanana/`
-  - `Qwen/`
-  - `DALL-E/`
+  - local `images/FLUX/` syncs to remote `FLUX/`
+  - local `images/FLUX2/` syncs to remote `FLUX2/`
+  - local `images/NanoBanana/` syncs to remote `NanoBanana/`
+  - local `images/Qwen/` syncs to remote `Qwen/`
+  - local `images/DALL-E/` syncs to remote `DALL-E/`
 - Not published as part of the public dataset:
-  - `AdobeStock/`
-  - `GoogleSearch/`
+  - `images/AdobeStock/`
+  - `images/GoogleSearch/`
   - `Papers/`
   - `_Obsolete/`
   - local secrets and local virtual environments
@@ -56,7 +56,7 @@ This split exists because the public dataset is limited to AI-generated images t
 
 ## Corpus shape
 
-Most folders are organized as `SOURCE/CATEGORY/...`, where category names include:
+Most local image folders are organized as `images/SOURCE/CATEGORY/...`, where category names include:
 
 - `CEO`
 - `Cashier`
@@ -77,20 +77,20 @@ The image folders mix AI-generated sources and search-based reference sources. T
 
 ### AI-generated sources
 
-- `FLUX/`: images generated with quantized local runs of Black Forest Labs' `FLUX.1 [dev]` model. Black Forest Labs announced FLUX.1 on August 1, 2024. The broader FLUX.1 line mixes open-weight and closed offerings, but this project's `FLUX/` folder specifically comes from quantized `FLUX.1 [dev]`, the open-weight non-commercial variant.
-- `FLUX2/`: images generated with quantized local runs of Black Forest Labs' `FLUX.2 [dev]` model, i.e. the second-generation FLUX line rather than another FLUX.1 run. Black Forest Labs announced FLUX.2 on November 25, 2025. The broader FLUX.2 line mixes API products and open-weight releases, but this project's `FLUX2/` folder specifically refers to quantized `FLUX.2 [dev]` outputs.
-- `NanoBanana/`: images generated with Google's Gemini 2.5 Flash Image family. Google introduced Gemini 2.5 Flash Image on August 26, 2025 and explicitly described it as "aka nano-banana". This is a closed Google model delivered through the Gemini API, Google AI Studio, and Vertex AI rather than open weights.
-- `Qwen/`: images generated with Qwen-Image from Alibaba's Qwen team. Qwen announced Qwen-Image on August 4, 2025 as a 20B image foundation model and released weights publicly on Hugging Face and ModelScope. In practice this makes `Qwen/` the open-weight image-generator bucket in this repo.
-- `DALL-E/`: images generated with OpenAI DALL-E. DALL-E is a closed OpenAI image-generation model family and service rather than an open-weight release.
+- `images/FLUX/`: images generated with quantized local runs of Black Forest Labs' `FLUX.1 [dev]` model. Black Forest Labs announced FLUX.1 on August 1, 2024. The broader FLUX.1 line mixes open-weight and closed offerings, but this project's `images/FLUX/` folder specifically comes from quantized `FLUX.1 [dev]`, the open-weight non-commercial variant.
+- `images/FLUX2/`: images generated with quantized local runs of Black Forest Labs' `FLUX.2 [dev]` model, i.e. the second-generation FLUX line rather than another FLUX.1 run. Black Forest Labs announced FLUX.2 on November 25, 2025. The broader FLUX.2 line mixes API products and open-weight releases, but this project's `images/FLUX2/` folder specifically refers to quantized `FLUX.2 [dev]` outputs.
+- `images/NanoBanana/`: images generated with Google's Gemini 2.5 Flash Image family. Google introduced Gemini 2.5 Flash Image on August 26, 2025 and explicitly described it as "aka nano-banana". This is a closed Google model delivered through the Gemini API, Google AI Studio, and Vertex AI rather than open weights.
+- `images/Qwen/`: images generated with Qwen-Image from Alibaba's Qwen team. Qwen announced Qwen-Image on August 4, 2025 as a 20B image foundation model and released weights publicly on Hugging Face and ModelScope. In practice this makes `images/Qwen/` the open-weight image-generator bucket in this repo.
+- `images/DALL-E/`: images generated with OpenAI DALL-E. DALL-E is a closed OpenAI image-generation model family and service rather than an open-weight release.
 
 These folders represent model-controlled outputs rather than third-party reference imagery, which is why they are the folders intended for publication in the Hugging Face dataset repo.
 
-License note for AI-generated folders: project metadata and documentation can be published under `CC-BY 4.0`, but the generated images themselves may also remain subject to the license terms, usage policies, or service terms of their upstream model providers. In other words, the dataset should not imply that `CC-BY 4.0` is the only governing layer for `FLUX/`, `FLUX2/`, `NanoBanana/`, `Qwen/`, or `DALL-E/`.
+License note for AI-generated folders: project metadata and documentation can be published under `CC-BY 4.0`, but the generated images themselves may also remain subject to the license terms, usage policies, or service terms of their upstream model providers. In other words, the dataset should not imply that `CC-BY 4.0` is the only governing layer for `images/FLUX/`, `images/FLUX2/`, `images/NanoBanana/`, `images/Qwen/`, or `images/DALL-E/`.
 
 ### Search-based reference sources
 
-- `GoogleSearch/`: images collected from Google Image Search.
-- `AdobeStock/`: images collected from Adobe Stock search results.
+- `images/GoogleSearch/`: images collected from Google Image Search.
+- `images/AdobeStock/`: images collected from Adobe Stock search results.
 
 For both search-based sources, the collection rule was intentionally simple: use the search function for each target label and keep the first 24 sensible results. Obviously irrelevant results were skipped, for example comic or cartoon images, non-person results, or images that clearly did not match the intended query.
 
@@ -98,15 +98,15 @@ These folders are rough reference samples only. They are not controlled datasets
 
 ## Current labeled subset
 
-The current `statistics.json` does not describe the whole corpus. It contains 48 labeled samples only, and all of them come from the `FLUX` directory:
+The current `statistics.json` does not describe the whole corpus. It contains 48 labeled samples only, and all of them come from the `images/FLUX` directory:
 
 - 24 `CEO` images
 - 24 `Cashier` images
 
 Those labels were generated from the sidecar label files in:
 
-- `FLUX/CEO`
-- `FLUX/Cashier`
+- `images/FLUX/CEO`
+- `images/FLUX/Cashier`
 
 The extracted attributes currently include:
 
@@ -156,7 +156,7 @@ Run:
 
 ```bash
 export OPENAI_API_KEY="your-api-key-here"
-python generate_image_labels.py FLUX/Cashier
+.venv/bin/python generate_image_labels.py images/FLUX/Cashier
 ```
 
 Notes:
@@ -172,7 +172,7 @@ Notes:
 This script walks one directory level below the given base directory, reads `.json` files, extracts JSON objects, and appends the folder name as `person_type`.
 
 ```bash
-python statistics_generate.py FLUX
+.venv/bin/python statistics_generate.py images/FLUX
 ```
 
 That writes `statistics.json` into the current working directory.
@@ -182,8 +182,8 @@ That writes `statistics.json` into the current working directory.
 Install Flask and start the local explorer:
 
 ```bash
-pip install flask
-python statistics_show.py
+.venv/bin/pip install flask
+.venv/bin/python statistics_show.py
 ```
 
 Then open `http://127.0.0.1:5000/`.
@@ -199,8 +199,19 @@ This replaces the older note from `readme.txt`, which referred to the same local
 Example:
 
 ```bash
-python rasterize.py 6 4 2400 1600 FLUX/Cashier --output cashier_grid.jpg
+.venv/bin/python rasterize.py 6 4 2400 1600 images/FLUX/Cashier --output cashier_grid.jpg
 ```
+
+### Sync public images to Hugging Face
+
+Local image folders live under `images/`, but the Hugging Face dataset intentionally keeps source folders at the repository root. Use `sync_hf_images.py` to preserve that mapping:
+
+```bash
+.venv/bin/python sync_hf_images.py --dry-run
+.venv/bin/python sync_hf_images.py
+```
+
+The sync script uploads only `images/FLUX/`, `images/FLUX2/`, `images/NanoBanana/`, `images/Qwen/`, and `images/DALL-E/`. It does not publish `images/AdobeStock/` or `images/GoogleSearch/`.
 
 ## Interpretation and limitations
 

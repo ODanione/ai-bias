@@ -20,6 +20,8 @@ import argparse
 from pathlib import Path
 from PIL import Image
 
+from image_paths import resolve_image_path
+
 # Try enabling AVIF support
 try:
     import pillow_avif  # noqa: F401
@@ -114,7 +116,7 @@ def parse_args():
 def main():
     args = parse_args()
 
-    directory = Path(args.directory)
+    directory = resolve_image_path(args.directory)
     if not directory.is_dir():
         raise SystemExit(f"Error: {directory} is not a valid directory.")
 

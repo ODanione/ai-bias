@@ -16,26 +16,26 @@ Treat Hugging Face as the source of truth for the large AI-generated image corpu
 
 ## Public data policy
 
-Only the AI-generated image folders are intended for the public dataset:
+Only the AI-generated image folders under `images/` are intended for the public dataset:
 
-- `FLUX/`
-- `FLUX2/`
-- `NanoBanana/`
-- `Qwen/`
-- `DALL-E/`
+- `images/FLUX/`
+- `images/FLUX2/`
+- `images/NanoBanana/`
+- `images/Qwen/`
+- `images/DALL-E/`
 
 Do not publish these folders to GitHub unless the user explicitly changes the repository strategy.
 
 Do not publish these folders as part of the public dataset:
 
-- `AdobeStock/`
-- `GoogleSearch/`
+- `images/AdobeStock/`
+- `images/GoogleSearch/`
 - `Papers/`
 - `_Obsolete/`
 
 Reason:
 
-- `AdobeStock/` and `GoogleSearch/` contain third-party reference material.
+- `images/AdobeStock/` and `images/GoogleSearch/` contain third-party reference material.
 - `Papers/` contains papers and reference documents.
 - `_Obsolete/` is intentionally local-only historical material.
 
@@ -46,11 +46,11 @@ If a script or task needs the AI-generated corpus and the directories are missin
 
 The scripts currently assume the existing local folder structure, especially under:
 
-- `FLUX/`
-- `FLUX2/`
-- `NanoBanana/`
-- `Qwen/`
-- `DALL-E/`
+- `images/FLUX/`
+- `images/FLUX2/`
+- `images/NanoBanana/`
+- `images/Qwen/`
+- `images/DALL-E/`
 
 Do not change those script assumptions casually. If a folder layout is changed, update the scripts and the documentation in the same task.
 
@@ -90,9 +90,10 @@ GitHub should not contain:
 Hugging Face dataset publishing should:
 
 - use dataset repo `ODanione/ai-bias-images`
+- publish local `images/<source>/` folders to root-level `<source>/` folders on Hugging Face; do not add an `images/` wrapper folder there
 - keep license metadata aligned with the current project decision
 - preserve the folder structure unless the user asks for a migration
-- exclude `_Obsolete/`, `AdobeStock/`, `GoogleSearch/`, and `Papers/`
+- exclude `_Obsolete/`, `images/AdobeStock/`, `images/GoogleSearch/`, and `Papers/`
 
 ## Documentation expectations
 

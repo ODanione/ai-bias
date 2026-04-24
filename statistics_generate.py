@@ -6,6 +6,8 @@ import re
 import sys
 from typing import Any, Dict, List
 
+from image_paths import resolve_image_path
+
 
 def extract_json_from_text(text: str) -> Dict[str, Any]:
     """
@@ -114,7 +116,7 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    base_dir = os.path.abspath(args.base_dir)
+    base_dir = os.path.abspath(resolve_image_path(args.base_dir))
     persons = collect_persons(base_dir)
 
     output_path = os.path.join(os.getcwd(), "statistics.json")

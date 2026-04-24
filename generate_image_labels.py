@@ -12,6 +12,8 @@ from typing import Any, Dict, Optional, List
 from dotenv import load_dotenv
 from openai import AsyncOpenAI, RateLimitError
 
+from image_paths import resolve_image_path
+
 load_dotenv()
 
 
@@ -344,7 +346,7 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    directory = args.directory
+    directory = str(resolve_image_path(args.directory))
 
     if not os.path.isdir(directory):
         print(f"Error: {directory} is not a valid directory")
